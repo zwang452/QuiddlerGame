@@ -14,7 +14,7 @@ namespace QuiddlerLibrary
         public string TopDiscard { get; init; }
 
         public IPlayer NewPlayer();
-        public string toString();
+        public string ToString();
 
     }
 }
