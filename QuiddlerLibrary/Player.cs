@@ -15,6 +15,7 @@ namespace QuiddlerLibrary
         }
         public int CardCount { get => _cardCount; init => _cardCount = value; }
         public int TotalPoints { get => _totalPoints; init => _totalPoints = value; }
+        internal List<String> CardsAtHand { get; set; }
         private int _cardCount;
         private int _totalPoints;
         private Deck _deck;

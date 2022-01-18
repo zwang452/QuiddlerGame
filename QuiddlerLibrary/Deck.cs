@@ -28,6 +28,7 @@ namespace QuiddlerLibrary
             return new Player(new Deck())
             {
                 CardCount = CardsPerPlayer,
+                CardsAtHand = DealCards(_cardCount),
                 TotalPoints = 0
             };
         }
@@ -41,6 +42,21 @@ namespace QuiddlerLibrary
         {
             Random rand = new Random();
             list = list.OrderBy(x => rand.Next()).ToList(); 
+        }
+
+        internal List<String> DealCards(int numberOfCards)
+        {
+            List<String> dealtCard = new List<string>();
+            foreach(String card in _cards)
+            {
+                _cards.Remove(card); //Remove the card from deck
+                dealtCard.Add(card); //Add the card to hand
+                
+                //Remove card from frequency table
+                _cardsFreq.TryGetValue(card, out int count);
+                _cardsFreq[card] = count - 1;
+            }
+            return dealtCard;
         }
         private void InitilizeDeck()
         {
