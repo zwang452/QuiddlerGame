@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Extensions;
 
 namespace QuiddlerLibrary
 {
@@ -10,10 +11,9 @@ namespace QuiddlerLibrary
             _cardsFreq = new Dictionary<string, int>();
             _cards = new List<string>();
             InitilizeDeck();
-            CardCount = _cardsFreq.Count;
         }
         public string About { get => _about; init => _about = value; }
-        public int CardCount { get => _cardCount; init => _cardCount = value; }
+        public int CardCount { get => _cardCount; init => _cardCount = _cards.Count; }
         public int CardsPerPlayer { get => _cardsPerPlayer; set => _cardsPerPlayer = value; }
         public string TopDiscard { get => _topDiscard; init => _topDiscard = value; }
         private string _about;
@@ -25,10 +25,14 @@ namespace QuiddlerLibrary
 
         public IPlayer NewPlayer()
         {
+            List<string> newPlayerHandCards = DealCards(CardsPerPlayer);
+            Dictionary<string, int> newPlayerHandCardsFreq = new Dictionary<string, int>();
+            newPlayerHandCardsFreq.UpdateFreq(newPlayerHandCards);
             return new Player(new Deck())
             {
                 CardCount = CardsPerPlayer,
-                CardsAtHand = DealCards(_cardCount),
+                CardsAtHand = newPlayerHandCards,
+                CardsAtHandFreq = newPlayerHandCardsFreq,
                 TotalPoints = 0
             };
         }
@@ -44,19 +48,33 @@ namespace QuiddlerLibrary
             list = list.OrderBy(x => rand.Next()).ToList(); 
         }
 
-        internal List<String> DealCards(int numberOfCards)
+        internal List<string> DealCards(int numberOfCards)
         {
-            List<String> dealtCard = new List<string>();
-            foreach(String card in _cards)
+            List<string> dealtCard = new List<string>();
+            foreach(string card in _cards)
             {
                 _cards.Remove(card); //Remove the card from deck
                 dealtCard.Add(card); //Add the card to hand
-                
+
                 //Remove card from frequency table
-                _cardsFreq.TryGetValue(card, out int count);
-                _cardsFreq[card] = count - 1;
+                _cardsFreq.DiscardUpdateFreq(card);
             }
             return dealtCard;
+        }
+        internal string DrawCard()
+        {
+            if (_cards.Count == 0)
+            {
+                throw new InvalidOperationException();
+            }
+            string topCard = _cards[0];
+            _cards.RemoveAt(0);
+            return topCard;
+        } 
+        //internal Dictionary<String, int> GetDeckCards() { return _cardsFreq; }
+        internal void ChangeTopDiscardCard(string card)
+        {
+            _topDiscard = card;
         }
         private void InitilizeDeck()
         {
@@ -106,6 +124,6 @@ namespace QuiddlerLibrary
             }
             ShuffleList(_cards);
         }
-        internal Dictionary<String, int> GetDeckCards() { return _cardsFreq; }
+        
     }
 }
