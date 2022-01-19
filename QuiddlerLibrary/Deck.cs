@@ -2,20 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using Extensions;
+using Word = Microsoft.Office.Interop.Word;
 
 namespace QuiddlerLibrary
 {
     public class Deck : IDeck
     {
-        public Deck() {
+        public Deck()
+        {
             _cardsFreq = new Dictionary<string, int>();
             _cards = new List<string>();
+            CardValues = new Dictionary<string, int>
+            {
+                {"a", 2},
+                {"e", 2},
+                {"i", 2},
+                {"o", 2},
+                {"l", 3},
+                {"s", 3},
+                {"t", 3},
+                {"u", 4},
+                {"y", 4}
+            };
             InitilizeDeck();
+            CardCount = _cards.Count;
         }
         public string About { get => _about; init => _about = value; }
-        public int CardCount { get => _cardCount; init => _cardCount = _cards.Count; }
+        public int CardCount { get => _cardCount; init => _cardCount = value; }
         public int CardsPerPlayer { get => _cardsPerPlayer; set => _cardsPerPlayer = value; }
         public string TopDiscard { get => _topDiscard; init => _topDiscard = value; }
+        internal Word.Application SpellCheckObject { get; }
+        internal Dictionary<string, int> CardValues { get; init; }
         private string _about;
         private int _cardCount;
         private int _cardsPerPlayer;
@@ -45,13 +62,13 @@ namespace QuiddlerLibrary
         private void ShuffleList(List<string> list)
         {
             Random rand = new Random();
-            list = list.OrderBy(x => rand.Next()).ToList(); 
+            list = list.OrderBy(x => rand.Next()).ToList();
         }
 
         internal List<string> DealCards(int numberOfCards)
         {
             List<string> dealtCard = new List<string>();
-            foreach(string card in _cards)
+            foreach (string card in _cards)
             {
                 _cards.Remove(card); //Remove the card from deck
                 dealtCard.Add(card); //Add the card to hand
@@ -70,7 +87,7 @@ namespace QuiddlerLibrary
             string topCard = _cards[0];
             _cards.RemoveAt(0);
             return topCard;
-        } 
+        }
         //internal Dictionary<String, int> GetDeckCards() { return _cardsFreq; }
         internal void ChangeTopDiscardCard(string card)
         {
@@ -80,16 +97,16 @@ namespace QuiddlerLibrary
         {
             _cardsFreq.Clear();
             _cards.Clear();
-            foreach (string card in new []{ "b", "c", "f", "h", "j", "k", "m", "p", "q", "v", "w", "x", "z", 
+            foreach (string card in new[]{ "b", "c", "f", "h", "j", "k", "m", "p", "q", "v", "w", "x", "z",
                 "cl", "er", "in", "qu", "th"})
             {
                 _cardsFreq.Add(card, 2);
-                for(int i = 0; i < 2; ++i)
+                for (int i = 0; i < 2; ++i)
                 {
                     _cards.Add(card);
                 }
             }
-            foreach (string card in new[]{ "d", "g", "l", "s", "y" })
+            foreach (string card in new[] { "d", "g", "l", "s", "y" })
             {
                 _cardsFreq.Add(card, 4);
                 for (int i = 0; i < 4; ++i)
@@ -97,7 +114,7 @@ namespace QuiddlerLibrary
                     _cards.Add(card);
                 }
             }
-            foreach (string card in new[]{ "n", "r", "t", "u" })
+            foreach (string card in new[] { "n", "r", "t", "u" })
             {
                 _cardsFreq.Add(card, 6);
                 for (int i = 0; i < 6; ++i)
@@ -123,7 +140,8 @@ namespace QuiddlerLibrary
                 _cards.Add("e");
             }
             ShuffleList(_cards);
+           
         }
-        
+
     }
 }

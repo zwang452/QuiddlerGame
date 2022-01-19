@@ -4,11 +4,10 @@ using Extensions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Word = Microsoft.Office.Interop.Word;
 
 namespace QuiddlerLibrary
 {
-    public class Player : IPlayer
+    internal class Player : IPlayer
     {
         public Player(Deck deck)
         {
@@ -18,16 +17,17 @@ namespace QuiddlerLibrary
         public int TotalPoints { get => _totalPoints; init => _totalPoints = value; }
         internal List<string> CardsAtHand { get; set; }
         internal Dictionary<string, int> CardsAtHandFreq { get; set; }
-        internal Deck _deck;
+        private Deck _deck;
         private int _cardCount;
         private int _totalPoints;
 
-        bool IPlayer.Discard(string card)
+        public bool Discard(string card)
         {
             if (CardsAtHand.Contains(card))
             {
+                CardsAtHand.Remove(card);
+                _cardCount = CardsAtHand.Count;
                 _deck.ChangeTopDiscardCard(card);
-                _cardCount--;
                 //Remove card from frequency table
                 CardsAtHandFreq.DiscardUpdateFreq(card);
                 return true;
@@ -35,7 +35,7 @@ namespace QuiddlerLibrary
             return false;
         }
 
-        string IPlayer.DrawCard()
+        public string DrawCard()
         {
             string cardToDraw = _deck.DrawCard();//throws exception if deck is empty
             CardsAtHand.Add(cardToDraw);
@@ -43,7 +43,7 @@ namespace QuiddlerLibrary
             return cardToDraw;
         }
 
-        string IPlayer.PickUpTopDiscard()
+        public string PickUpTopDiscard()
         {
             string topDiscardCard = _deck.TopDiscard;
             CardsAtHand.Add(topDiscardCard);
@@ -51,22 +51,52 @@ namespace QuiddlerLibrary
             return topDiscardCard;
         }
 
-        int IPlayer.PlayWord(string candidate)
+        public int PlayWord(string candidate)
         {
-            throw new NotImplementedException();
+            int score = TestWord(candidate);
+            if(score != 0)
+            {
+                _totalPoints += score;
+                string[] candidateArray = candidate.Split(" ");
+                foreach(string card in candidateArray)
+                {
+                    CardsAtHand.Remove(card);
+                    CardsAtHandFreq.DiscardUpdateFreq(card);
+                }
+            }
+            return score;
         }
 
-        int IPlayer.TestWord(string candidate)
+        public int TestWord(string candidate)
         {
-            //string[] words = candidate.Split(" ");
-            //Dictionary<string, int> candidateFreq = new Dictionary<string, int>();
-            //candidateFreq.UpdateFreq(words);
-            throw new NotImplementedException();
+            int score = 0;
+            string[] candidateArray = candidate.Split(" ");
+            // the player must have not used all their cards to form the word
+            if (candidateArray.Length <= CardCount) return score;
+            Dictionary<string, int> candidateFreq = new Dictionary<string, int>();
+            candidateFreq.UpdateFreq(candidateArray);
+            string candidateString = "";
+            // test if a real word
+            foreach (string card in candidateArray)
+            {
+                candidateString += card;
+            }
+            if (!_deck.SpellCheckObject.CheckSpelling(candidateString)) return score;
+            //) the letters of the candidate string mustb be a subset of the letters in the current rack object
+            foreach (string card in candidateFreq.Keys)
+            {
+                if (!CardsAtHandFreq.ContainsKey(card)) return score;
+                if (CardsAtHandFreq[card] != candidateFreq[card]) return score;
+                score += _deck.CardValues[card];
+            }
+            return score;
+
         }
 
-        string IPlayer.ToString()
+        public override string ToString()
         {
             throw new NotImplementedException();
         }
     }
 }
+
