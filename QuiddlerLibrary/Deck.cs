@@ -14,15 +14,16 @@ namespace QuiddlerLibrary
             _cards = new List<string>();
             CardValues = new Dictionary<string, int>
             {
-                {"a", 2},
-                {"e", 2},
-                {"i", 2},
-                {"o", 2},
-                {"l", 3},
-                {"s", 3},
-                {"t", 3},
-                {"u", 4},
-                {"y", 4}
+                {"a", 2}, {"e", 2}, {"i", 2}, {"o", 2},
+                {"l", 3}, {"s", 3}, {"t", 3},
+                {"u", 4}, {"y", 4},
+                {"d", 5}, {"m", 5}, {"n", 5}, {"r", 5},
+                {"f", 6}, {"g", 6}, {"p", 6},
+                {"h", 7}, {"er", 7}, {"in", 7},
+                {"b", 8}, {"c", 8}, {"k", 8},
+                {"qu", 9}, {"th", 9},
+                {"w", 10}, {"cl", 10},
+                {"v", 11}, {"x", 12}, {"j", 13}, {"z", 14}, {"q", 15}
             };
             InitilizeDeck();
             CardCount = _cards.Count;
