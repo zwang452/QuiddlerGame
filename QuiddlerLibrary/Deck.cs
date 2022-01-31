@@ -10,7 +10,7 @@ namespace QuiddlerLibrary
     {
         public Deck()
         {
-            _cardsFreq = new Dictionary<string, int>();
+            _cardsFreq = new SortedDictionary<string, int>(new CardComparer());
             _cards = new List<string>();
             CardValues = new Dictionary<string, int>
             {
@@ -25,20 +25,37 @@ namespace QuiddlerLibrary
                 {"w", 10}, {"cl", 10},
                 {"v", 11}, {"x", 12}, {"j", 13}, {"z", 14}, {"q", 15}
             };
+            spellCheckObject = new Word.Application();
             InitilizeDeck();
+            About = "Test Client for: Quiddler (TM) Library, © 2022 Zitong/Behnaz";
             CardCount = _cards.Count;
         }
         public string About { get => _about; init => _about = value; }
-        public int CardCount { get => _cardCount; init => _cardCount = value; }
-        public int CardsPerPlayer { get => _cardsPerPlayer; set => _cardsPerPlayer = value; }
-        public string TopDiscard { get => _topDiscard; init => _topDiscard = value; }
-        internal Word.Application SpellCheckObject { get; }
+        public int CardCount { get => _cards.Count; init => _cardCount = value; }
+        public int CardsPerPlayer { 
+            get => _cardsPerPlayer; 
+            set { 
+                if(value < 3 || value > 10)
+                {
+                    throw new ArgumentOutOfRangeException("Invalid input; Try again with a number between 3-10.");
+                }
+                _cardsPerPlayer = value;
+            }    
+        }
+        public string TopDiscard { 
+            get {
+                if (_topDiscard != null) return _topDiscard;
+                _topDiscard = DrawCard();
+                return _topDiscard;
+            } 
+            init => _topDiscard = value; }
+        internal Word.Application spellCheckObject;
         internal Dictionary<string, int> CardValues { get; init; }
         private string _about;
         private int _cardCount;
         private int _cardsPerPlayer;
         private string _topDiscard;
-        private Dictionary<string, int> _cardsFreq;
+        private SortedDictionary<string, int> _cardsFreq;
         private List<String> _cards;
 
         public IPlayer NewPlayer()
@@ -46,7 +63,9 @@ namespace QuiddlerLibrary
             List<string> newPlayerHandCards = DealCards(CardsPerPlayer);
             Dictionary<string, int> newPlayerHandCardsFreq = new Dictionary<string, int>();
             newPlayerHandCardsFreq.UpdateFreq(newPlayerHandCards);
-            return new Player(new Deck())
+
+
+            return new Player(this)
             {
                 CardCount = CardsPerPlayer,
                 CardsAtHand = newPlayerHandCards,
@@ -57,25 +76,31 @@ namespace QuiddlerLibrary
 
         public override string ToString()
         {
-            _about = "sd";
-            return "a";
+            int entryNumber = 0;
+            string output = "";
+            foreach (KeyValuePair<string, int> entry in _cardsFreq)
+            {
+                if (entryNumber++ % 12 == 0) output += "\n";
+                output += String.Format("{0,-7}",$"{entry.Key}({entry.Value})");
+            }
+
+            return output;
         }
-        private void ShuffleList(List<string> list)
+        private void ShuffleList()
         {
             Random rand = new Random();
-            list = list.OrderBy(x => rand.Next()).ToList();
+            _cards = _cards.OrderBy(x => rand.Next()).ToList();
         }
 
         internal List<string> DealCards(int numberOfCards)
         {
             List<string> dealtCard = new List<string>();
-            foreach (string card in _cards)
+            for (int i = 0; i < numberOfCards; ++i)
             {
-                _cards.Remove(card); //Remove the card from deck
-                dealtCard.Add(card); //Add the card to hand
-
-                //Remove card from frequency table
-                _cardsFreq.DiscardUpdateFreq(card);
+                if (CardCount == 0) return dealtCard;
+                dealtCard.Add(_cards[0]); //Add the card to hand
+                _cardsFreq.DiscardUpdateFreq(_cards[0]); //Remove card from frequency table
+                _cards.RemoveAt(0); //Remove the card from deck
             }
             return dealtCard;
         }
@@ -140,8 +165,7 @@ namespace QuiddlerLibrary
             {
                 _cards.Add("e");
             }
-            ShuffleList(_cards);
-           
+            ShuffleList();
         }
 
     }

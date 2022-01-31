@@ -13,8 +13,8 @@ namespace QuiddlerLibrary
         {
             _deck = deck;
         }
-        public int CardCount { get => _cardCount; init => _cardCount = CardsAtHand.Count; }
-        public int TotalPoints { get => _totalPoints; init => _totalPoints = value; }
+        public int CardCount { get => CardsAtHand.Count; init => _cardCount = 0; }
+        public int TotalPoints { get => _totalPoints; init => _totalPoints = 0; }
         internal List<string> CardsAtHand { get; set; }
         internal Dictionary<string, int> CardsAtHandFreq { get; set; }
         private Deck _deck;
@@ -72,7 +72,7 @@ namespace QuiddlerLibrary
             int score = 0;
             string[] candidateArray = candidate.Split(" ");
             // the player must have not used all their cards to form the word
-            if (candidateArray.Length <= CardCount) return score;
+            if (candidateArray.Length >= CardCount) return score;
             Dictionary<string, int> candidateFreq = new Dictionary<string, int>();
             candidateFreq.UpdateFreq(candidateArray);
             string candidateString = "";
@@ -81,12 +81,12 @@ namespace QuiddlerLibrary
             {
                 candidateString += card;
             }
-            if (!_deck.SpellCheckObject.CheckSpelling(candidateString)) return score;
-            //) the letters of the candidate string mustb be a subset of the letters in the current rack object
+            if (!_deck.spellCheckObject.CheckSpelling(candidateString)) return score;
+            //) the letters of the candidate string must be a subset of the letters in the current rack object
             foreach (string card in candidateFreq.Keys)
             {
                 if (!CardsAtHandFreq.ContainsKey(card)) return score;
-                if (CardsAtHandFreq[card] != candidateFreq[card]) return score;
+                if (CardsAtHandFreq[card] < candidateFreq[card]) return score;
                 score += _deck.CardValues[card];
             }
             return score;
@@ -95,7 +95,14 @@ namespace QuiddlerLibrary
 
         public override string ToString()
         {
-            throw new NotImplementedException();
+            string handCards = "[";
+            foreach(string card in CardsAtHand)
+            {
+                handCards += card + " ";
+            }
+            handCards = handCards.Substring(0, handCards.Length - 1);
+            handCards += "]";
+            return handCards;
         }
     }
 }

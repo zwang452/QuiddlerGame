@@ -8,7 +8,7 @@ namespace Extensions
 {
     internal static class Extensions
     {
-        internal static void UpdateFreq(this Dictionary<string, int> freq, IEnumerable<string> cards)
+        internal static void UpdateFreq(this IDictionary<string, int> freq, IEnumerable<string> cards)
         {
             foreach (string card in cards)
             {
@@ -22,11 +22,11 @@ namespace Extensions
                 }
             }
         }
-        internal static void DiscardUpdateFreq(this Dictionary<string, int> freq, string card)
+        internal static void DiscardUpdateFreq(this IDictionary<string, int> freq, string card)
         {
             if(freq.TryGetValue(card, out int count)) freq[card] = count - 1;
         }
-        internal static void DrawUpdateFreq(this Dictionary<string,int> freq, string card)
+        internal static void DrawUpdateFreq(this IDictionary<string,int> freq, string card)
         {
             if (freq.ContainsKey(card))
             {
